@@ -23,7 +23,7 @@ void testApp::setup(){
     mhIMG.allocate(vidWidth, vidHeight, OF_IMAGE_GRAYSCALE);
     hmIMG.allocate(vidWidth, vidHeight, OF_IMAGE_COLOR_ALPHA);
     
-    c = ofColor(0,0,0,0);
+    c = ofColor::fromHsb(170,255,255,0);
     
 }
 
@@ -49,12 +49,10 @@ void testApp::update(){
                 {
                     meIMG.setColor(i, j, 0);
                     mhIMG.setColor(i, j, 0);
-                    mhIMG.setColor(i,j,c);
+                    hmIMG.setColor(i,j,c);
                 }
             }
-            
-           // c = ofColor::fromHsb(255,255,255);
-			bLearnBakground = false;            //reset this to false
+            bLearnBakground = false;            //reset this to false
 		}
 
         //set current ofPixels to current frame
@@ -65,7 +63,8 @@ void testApp::update(){
         {
             for(int j = 0; j < vidHeight; j++)
             {
-               
+                
+                ///// DIFFERENCE IMG
                 //create diffIMG by getting absolute value of current image - background image
                 diffIMG.setColor(i,j, (abs(grIMG.getColor(i, j).getBrightness() - bgIMG.getColor(i,j).getBrightness())));
                 
@@ -79,33 +78,31 @@ void testApp::update(){
                 {
                     diffIMG.setColor(i, j, 0);
                 }
+                
+                
 
-                //if the diffIMG is white, set those pixels white in finalIMG, this will accumulate
+                //MOTION ENERGY & MOTION HISTORY if the diffIMG is white
                 if(diffIMG.getColor(i,j).getBrightness() == 255)
                 {
-                    
-                    if(meIMG.getColor(i, j).getBrightness() == 255)
-                    {
-                        
-                        float tempBright = hmIMG.getColor(i, j).getHue();
-                        if(tempBright <= 235)
-                        {
-                            hmIMG.getColor(i,j).set(100,20,100, 100);
-                        }
-                    }
-                    
-                    
-                    meIMG.setColor(i, j, 255);
-                    mhIMG.setColor(i,j,255);
-                    
-                    
+                    meIMG.setColor(i, j, 255);          //set motion energy pixel to white
+                    mhIMG.setColor(i,j,255);            //set motion history pixel to white
                 }
                 
-                //fade out the older white over time (motion history image)
+                //HEAT MAP:  is diff AND motion energy are white
+                if(diffIMG.getColor(i,j).getBrightness() == 255 && meIMG.getColor(i, j).getBrightness() ==255)
+                {
+                    float hue = hmIMG.getColor(i, j).getHue();
+                    float brightness = hmIMG.getColor(i, j).getBrightness();
+                    hue -= 10;
+                    if(hue <= 10) hue = 0;
+                    hmIMG.setColor(i, j, ofColor::fromHsb(hue, 255, 255));
+                }
+                
+                //MOTION HISTORY: fade out the older white over time (motion history image)
                 int brightness = mhIMG.getColor(i, j).getBrightness();
                 if(brightness >= 10)
                 {
-                    mhIMG.setColor(i,j, (brightness - 10));
+                    mhIMG.setColor(i, j, brightness - 10);
                 }           
             }
         }
@@ -128,14 +125,19 @@ void testApp::draw(){
     mhImage = mhIMG;
     mhImage.draw(0, vidHeight/2 + 20, vidWidth/2, vidHeight/2);
     
+    //show original image
+    vidPlayer.draw(vidWidth/2 + 20, vidHeight/2 + 20, vidWidth/2, vidHeight/2);
+    
     //set heat map pixesl to an image and draw it
     hmImage = hmIMG;
     hmImage.draw(vidWidth/2 + 20, vidHeight/2 + 20, vidWidth/2, vidHeight/2);
-    	
+    
+    
+    
 	// finally, a report:
 	ofSetHexColor(0xffffff);
 	stringstream reportStr;
-	reportStr << "bg subtraction" << endl
+	reportStr << "PRESS SPACE TO RESET" << endl
               << "FPS: " << ofGetFrameRate() << endl
 			  << "press ' ' to capture bg" << endl
 			  << "threshold " << threshold << " (press: +/-)" << endl
