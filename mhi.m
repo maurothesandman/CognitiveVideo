@@ -52,7 +52,10 @@ for i = 2:nFrames
     
     figure(1)
     subplot(2,1,1),imshow(currentFrame);
-    subplot(2,1,2),imshow(mask); %[0 1] based, unless one specifies otherwise
+    %subplot(2,1,2),imshow(mask); %[0 1] based, unless one specifies otherwise
+    subplot(2,1,2),imshow(im2uint16(mask));
+    %colormap('jet');
+    %imagesc(im2uint8(mask));
     
 %     if mod(i, 50) == 0
 %         disp('saving')%'%disp(srtcat('saving', num2str(i+10)))

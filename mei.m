@@ -48,10 +48,10 @@ for i = 2:nFrames
     figure(1)
     subplot(2,1,1),imshow(currentFrame)
     subplot(2,1,2),imshow(mask)
-    
-%     if i == 150 || i == 300 || i == 450
-%         disp('saving')%srtcat('saving', num2str(i)))
-%         imwrite(foreground, num2str(i), 'jpg');
+%     
+%     if mod(i,50) == 0 || i == 2
+%         disp('saving')
+%         imwrite(mask, num2str(i), 'jpg');
 %     end
 end
 
